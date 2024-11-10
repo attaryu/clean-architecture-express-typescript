@@ -1,0 +1,2 @@
+# Clean Architecture Express API
+Just a repository for my practice of clean architecture with Typescript on <a href="https://expressjs.com/" target="_blank">Express</a>, thanks to <a href="https://nanosoft.co.za/" target="_blank">Nanosoft</a> for the <a href="https://nanosoft.co.za/blog/post/clean-api" target="_blank">tutorial</a>.
