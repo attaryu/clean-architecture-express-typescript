@@ -1,49 +1,37 @@
 import type { DatabaseWrapper } from '@/dataSourcesType/database-wrapper';
+
 import { MongoDBContactDataSource } from '@/dataSources/mongodb/mongodb-contact-data-source';
 
 describe('MongoDB DataSource', () => {
-	let mockDatabase: DatabaseWrapper;
+	let ds: MongoDBContactDataSource;
+	let databaseMock: DatabaseWrapper;
 
-	const data = {
+	const dataDummy = {
 		surname: 'Smith',
 		firstName: 'John',
 		email: 'john@gmail.com',
 	};
 
-	beforeAll(async () => {
-		mockDatabase = {
-			find: jest.fn(),
-			insertOne: jest.fn(),
+	beforeAll(() => {
+		databaseMock = {
+			find: jest.fn().mockResolvedValue([{ ...dataDummy, _id: '123' }]),
+			insertOne: jest.fn().mockResolvedValue({ insertedId: '123' }),
 		};
-	});
 
-	beforeEach(() => {
-		jest.clearAllMocks();
+		ds = new MongoDBContactDataSource(databaseMock);
 	});
 
 	test('getAll', async () => {
-		const ds = new MongoDBContactDataSource(mockDatabase);
-
-		jest
-			.spyOn(mockDatabase, 'find')
-			.mockImplementation(() => Promise.resolve([{ ...data, _id: '123' }]));
-
 		const result = await ds.getAll();
 
-		expect(mockDatabase.find).toHaveBeenCalledWith({});
-		expect(result).toStrictEqual([{ ...data, id: '123' }]);
+		expect(result).toStrictEqual([{ ...dataDummy, id: '123' }]);
+		expect(databaseMock.find).toHaveBeenCalledWith({});
 	});
 
 	test('create', async () => {
-		const ds = new MongoDBContactDataSource(mockDatabase);
+		const result = await ds.create(dataDummy);
 
-		jest
-			.spyOn(mockDatabase, 'insertOne')
-			.mockImplementation(() => Promise.resolve({ insertedId: '123' }));
-
-		const result = await ds.create(data);
-
-		expect(mockDatabase.insertOne).toHaveBeenCalledWith(data);
 		expect(result).toStrictEqual(true);
+		expect(databaseMock.insertOne).toHaveBeenCalledWith(dataDummy);
 	});
 });

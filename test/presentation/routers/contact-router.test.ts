@@ -8,102 +8,67 @@ import ContactsRouter from '@/routes/contacts-router';
 import server from '@/server';
 
 describe('Contact router', () => {
-	class MockGetAllContactsUseCase implements GetAllContactsUseCase {
-		execute(): Promise<Contact[]> {
-			throw new Error('Method not implemented.');
-		}
-	}
+	const dummyData = {
+		id: '1',
+		surname: 'Smith',
+		firstName: 'John',
+		email: 'john@gmail.com',
+	};
 
-	class MockCreateContactUseCase implements CreateContactUseCase {
-		execute(contact: Contact): Promise<boolean> {
-			throw new Error('Method not implemented.');
-		}
-	}
+	const mockGetAllContactsUseCase: GetAllContactsUseCase = {
+		execute: jest
+			.fn()
+			.mockResolvedValueOnce([dummyData])
+			.mockRejectedValueOnce(Error()),
+	};
 
-	let mockGetAllContactsUseCase: MockGetAllContactsUseCase;
-	let mockCreateContactUseCase: MockCreateContactUseCase;
+	let mockCreateContactUseCase: CreateContactUseCase = {
+		execute: jest
+			.fn()
+			.mockResolvedValueOnce(true)
+			.mockRejectedValueOnce(Error()),
+	};
 
-	beforeAll(() => {
-		mockGetAllContactsUseCase = new MockGetAllContactsUseCase();
-		mockCreateContactUseCase = new MockCreateContactUseCase();
-
-		server.use(
-			'/contact',
-			ContactsRouter(mockGetAllContactsUseCase, mockCreateContactUseCase)
-		);
-	});
-
-	beforeEach(() => {
-		jest.clearAllMocks();
-	});
+	server.use(
+		'/contact',
+		ContactsRouter(mockGetAllContactsUseCase, mockCreateContactUseCase)
+	);
 
 	describe('GET /contact', () => {
+		afterEach(() => jest.clearAllMocks())
+		
 		test('should return 200 with data', async () => {
-			const ExpectData = [
-				{
-					id: '1',
-					surname: 'Smith',
-					firstName: 'John',
-					email: 'john@gmail.com',
-				},
-			];
-
-			jest
-				.spyOn(mockGetAllContactsUseCase, 'execute')
-				.mockImplementation(() => Promise.resolve(ExpectData));
-
 			const response = await request(server).get('/contact');
 
 			expect(response.status).toBe(200);
+			expect(response.body).toStrictEqual([dummyData]);
 			expect(mockGetAllContactsUseCase.execute).toHaveBeenCalledTimes(1);
-			expect(response.body).toStrictEqual(ExpectData);
 		});
 
 		test('GET /contact returns 500 on use case error', async () => {
-			jest
-				.spyOn(mockGetAllContactsUseCase, 'execute')
-				.mockImplementation(() => Promise.reject(Error()));
-
 			const response = await request(server).get('/contact');
 
 			expect(response.status).toBe(500);
 			expect(response.body).toStrictEqual({ message: 'Error fetching data' });
+			expect(mockGetAllContactsUseCase.execute).toHaveBeenCalledTimes(1);
 		});
 	});
 
 	describe('POST /contact', () => {
+		afterEach(() => jest.clearAllMocks())
+		
 		test('POST /contact', async () => {
-			const InputData = {
-				id: '1',
-				surname: 'Smith',
-				firstname: 'John',
-				email: 'john@gmail.com',
-			};
-
-			jest
-				.spyOn(mockCreateContactUseCase, 'execute')
-				.mockImplementation(() => Promise.resolve(true));
-
-			const response = await request(server).post('/contact').send(InputData);
+			const response = await request(server).post('/contact').send(dummyData);
 
 			expect(response.status).toBe(201);
+			expect(mockCreateContactUseCase.execute).toHaveBeenCalledTimes(1);
 		});
 
 		test('POST /contact returns 500 on use case error', async () => {
-			const InputData = {
-				id: '1',
-				surname: 'Smith',
-				firstname: 'John',
-				email: 'john@gmail.com',
-			};
-
-			jest
-				.spyOn(mockCreateContactUseCase, 'execute')
-				.mockImplementation(() => Promise.reject(Error()));
-
-			const response = await request(server).post('/contact').send(InputData);
+			const response = await request(server).post('/contact').send(dummyData);
 
 			expect(response.status).toBe(500);
+			expect(mockCreateContactUseCase.execute).toHaveBeenCalledTimes(1);
 		});
 	});
 });
