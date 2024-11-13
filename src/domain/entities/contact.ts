@@ -1,6 +1,8 @@
 export interface Contact {
-  id?: string;
-  email: string;
-  firstName: string;
-  surname: string;
+	_id: string;
+	email: string;
+	firstName: string;
+	surname: string;
 }
+
+export type ContactWithoutId = Omit<Contact, '_id'>;

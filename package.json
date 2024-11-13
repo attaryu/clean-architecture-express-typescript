@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll --collectCoverage",
+    "tests": "jest --watchAll --collectCoverage",
+    "test": "jest --watch",
     "dev": "nodemon ./src/main.ts"
   },
   "keywords": [],

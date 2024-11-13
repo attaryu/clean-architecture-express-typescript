@@ -38,7 +38,8 @@
 			"@/useCasesType/*": ["./src/domain/interfaces/use-cases/*"],
 			"@/useCases/*": ["./src/domain/use-cases/*"],
 			"@/dataSourcesType/*": ["./src/data/interfaces/data-sources/*"],
-			"@/dataSources/*": ["./src/data/data-sources/*"]
+			"@/dataSources/*": ["./src/data/data-sources/*"],
+			"@/databaseWrapperType/*": ["./src/data/interfaces/database-wrapper/*"]
 		} /* Specify a set of entries that re-map imports to additional lookup locations. */,
 		// "rootDirs": ["./src", "./test"],                                   /* Allow multiple folders to be treated as one when resolving modules. */
 		// "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */

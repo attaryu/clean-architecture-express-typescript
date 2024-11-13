@@ -1,37 +1,73 @@
-import type { DatabaseWrapper } from '@/dataSourcesType/database-wrapper';
+import type { Contact } from '@/entities/contact';
+import type { MongoDB } from 'src/data/interfaces/database-wrapper/mongodb';
 
 import { MongoDBContactDataSource } from '@/dataSources/mongodb/mongodb-contact-data-source';
 
 describe('MongoDB DataSource', () => {
-	let ds: MongoDBContactDataSource;
-	let databaseMock: DatabaseWrapper;
-
-	const dataDummy = {
+	const dummyData: Contact = {
+		_id: '123',
 		surname: 'Smith',
 		firstName: 'John',
 		email: 'john@gmail.com',
 	};
 
-	beforeAll(() => {
-		databaseMock = {
-			find: jest.fn().mockResolvedValue([{ ...dataDummy, _id: '123' }]),
-			insertOne: jest.fn().mockResolvedValue({ insertedId: '123' }),
-		};
+	const databaseMock: MongoDB<Contact> = {
+		convertToObjectId: jest.fn().mockImplementation(() => dummyData._id),
+		find: jest.fn().mockResolvedValue([dummyData]),
+		findOne: jest.fn().mockResolvedValue(dummyData),
+		insertOne: jest.fn().mockResolvedValue({ insertedId: dummyData._id }),
+		updateOne: jest.fn().mockResolvedValue({ updatedId: dummyData._id }),
+		deleteOne: jest.fn().mockResolvedValue({ deletedId: dummyData._id }),
+	};
 
-		ds = new MongoDBContactDataSource(databaseMock);
-	});
+	const ds = new MongoDBContactDataSource(databaseMock);
 
 	test('getAll', async () => {
 		const result = await ds.getAll();
 
-		expect(result).toStrictEqual([{ ...dataDummy, id: '123' }]);
+		expect(result).toStrictEqual([dummyData]);
+		expect(databaseMock.find).toHaveBeenCalledTimes(1);
 		expect(databaseMock.find).toHaveBeenCalledWith({});
 	});
 
+	test('get', async () => {
+		const result = await ds.get(dummyData._id);
+
+		expect(result).toStrictEqual(dummyData);
+		expect(databaseMock.findOne).toHaveBeenCalledTimes(1);
+		expect(databaseMock.findOne).toHaveBeenCalledWith({ _id: dummyData._id });
+	});
+
 	test('create', async () => {
-		const result = await ds.create(dataDummy);
+		const result = await ds.create(dummyData);
 
 		expect(result).toStrictEqual(true);
-		expect(databaseMock.insertOne).toHaveBeenCalledWith(dataDummy);
+		expect(databaseMock.insertOne).toHaveBeenCalledTimes(1);
+		expect(databaseMock.insertOne).toHaveBeenCalledWith(dummyData);
+	});
+
+	test('update', async () => {
+		const result = await ds.update(dummyData._id, dummyData);
+
+		expect(result).toStrictEqual(true);
+		expect(databaseMock.updateOne).toHaveBeenCalledTimes(1);
+		expect(databaseMock.updateOne).toHaveBeenCalledWith(
+			{ _id: dummyData._id },
+			{
+				$set: {
+					surname: dummyData.surname,
+					firstName: dummyData.firstName,
+					email: dummyData.email,
+				},
+			}
+		);
+	});
+
+	test('delete', async () => {
+		const result = await ds.delete(dummyData._id);
+
+		expect(result).toStrictEqual(true);
+		expect(databaseMock.deleteOne).toHaveBeenCalledTimes(1);
+		expect(databaseMock.deleteOne).toHaveBeenCalledWith({ _id: dummyData._id });
 	});
 });
